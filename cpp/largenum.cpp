@@ -9,6 +9,18 @@ using namespace std;
 struct largenum {
 	deque<int> op;
 	bool neg;
+	
+	friend ostream& operator<< (ostream& out, largenum val) {
+		if (val.neg) out<<'-';
+		if (val.op.size()==0) {out<<'0';}
+		else {
+			for(deque<int>::const_reverse_iterator vi = val.op.rbegin(); vi < val.op.rend(); vi++) {
+				out<<(*vi);
+			}
+		}
+		return out;
+	}
+	
 	bool readstring(const string& src, largenum& dst) {
 		dst.clear();
 		bool wasdigit = false;
@@ -39,13 +51,7 @@ struct largenum {
 	
 	void writestring(string& dst, const largenum& src) {
 		ostringstream os;
-		if (src.neg) os<<'-';
-		if (src.op.size()==0) {os<<'0';}
-		else {
-			for(deque<int>::const_reverse_iterator vi = src.op.rbegin(); vi < src.op.rend(); vi++) {
-				os<<(*vi);
-			}
-		}
+		os<<src;
 		dst = os.str();
 	}
 	void readlong(const long& arg, largenum& dst) {
@@ -87,17 +93,16 @@ struct largenum {
 int main (int argc, char* argv[]) {
 	largenum N1;
 	string out;
-	N1.writestring(out, N1);
-	cout<<"N1="<<out<<endl;
+	cout<<"N1="<<N1<<endl;
 	largenum N2(123414454);
-	N2.writestring(out, N2);
-	cout<<"N2="<<out<<endl;
+	cout<<"N2="<<N2<<endl;
 	try{
 	largenum N3("@#%$#@%@$%$#%$#$%@#%@#$%@#%@#$%");
 	} catch(...) {
 		cout<<"Exception!"<<endl;
 	}
 	largenum N4("23412432542354364356357676674563456435346345");
+	//just to prove that it works as well
 	N4.writestring(out, N4);
 	cout<<"N2="<<out<<endl;
 	return 0;
