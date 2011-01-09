@@ -88,14 +88,14 @@ struct largenum {
 		}
 		return ((*ti)>(*vi));
 	}
-	int popzeros(largenum& op) {
+	int popzeros() {
 		int numzeros = 0;
-		while(!(*op.op.begin())) {op.op.pop_front(); numzeros++;}
+		while(!*(op.begin())) {op.pop_front(); numzeros++;}
 		return numzeros;
 	}
 	
-	void pushzeros(largenum& op, const int numzeros) {
-		for (int i=0;i<numzeros;i++) op.op.push_front(0);
+	void pushzeros(const int numzeros) {
+		for (int i=0;i<numzeros;i++) op.push_front(0);
 	}
 	
 	friend largenum operator + (const largenum& op1, const largenum& op2) {
@@ -145,6 +145,32 @@ struct largenum {
 		while((*dst.op.rbegin())==0) dst.op.pop_back();
 		return dst;
 	}
+	
+	friend largenum operator * (const largenum& op1, const largenum& op2) {
+		largenum dst;
+		dst.clear();
+		largenum prepend, intern;
+		largenum mul1 = op1, mul2 = op2;
+		int numzeros = mul1.popzeros() + mul2.popzeros();
+		for (deque<int>::const_iterator it1 = mul1.op.begin();it1<mul1.op.end();it1++) {
+			intern = prepend;
+			int rest = 0;
+			deque<int>::const_iterator it2 = mul2.op.begin();
+			while(it2<mul2.op.end() || rest) {
+				int mul = rest;
+				if (it2<mul2.op.end())
+				mul += (*it2)*(*it1);
+				int token = mul%10;
+				rest = (mul - token)/10;
+				intern.op.push_back(token);
+				it2++;
+			}
+			dst = dst + intern;
+			prepend.op.push_back(0);
+		}
+		dst.pushzeros(numzeros);
+		return dst;
+	}
 };
 
 int main (int argc, char* argv[]) {
@@ -170,5 +196,6 @@ int main (int argc, char* argv[]) {
 	largenum op2(str);
 	cout<<"op1+op2="<<op1+op2<<endl;
 	cout<<"op1-op2="<<op1-op2<<endl;
+	cout<<"op1*op2="<<op1*op2<<endl;
 	return 0;
 }
