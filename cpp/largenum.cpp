@@ -45,6 +45,7 @@ struct largenum {
 				dst.op.push_back(t);
 			} else if ((*si)=='-') dst.neg=true;
 		}
+		//strip all zeroes
 		while (!(*dst.op.rbegin())) dst.op.pop_back();
 		return true;
 	}
@@ -171,6 +172,44 @@ struct largenum {
 		dst.pushzeros(numzeros);
 		return dst;
 	}
+
+	friend largenum operator /(const largenum& op1, const largenum& op2) {
+		largenum dst;
+		dst.clear();
+		if (op2>op1) {
+			return dst;
+		}
+		bool ismore = (op1>op2);
+		if (!ismore) {
+			dst.op.push_back(1);
+			return dst;
+		}
+		//assumption: all zeroes are stripped
+		largenum div = op1;
+		do {
+			int sizediff = 0, token = 1;
+			largenum intern = op2;
+			while(div>intern) {
+				intern.op.push_front(0);
+				sizediff++;
+			}
+			if (sizediff) { 
+				token = 10;
+				largenum minintern = intern;
+				minintern.op.pop_front();
+				while(intern>div) {
+					intern = intern - minintern;
+					token--;
+				}
+			}
+			largenum newtoken;
+			for (int i=0;i<sizediff-1;i++) newtoken.op.push_back(0);
+			newtoken.op.push_back(token);
+			dst = dst + newtoken;
+			div = div - intern;
+		} while (!(op2>div));
+		return dst;
+	}
 };
 
 int main (int argc, char* argv[]) {
@@ -197,5 +236,6 @@ int main (int argc, char* argv[]) {
 	cout<<"op1+op2="<<op1+op2<<endl;
 	cout<<"op1-op2="<<op1-op2<<endl;
 	cout<<"op1*op2="<<op1*op2<<endl;
+	cout<<"op1/op2="<<op1/op2<<endl;
 	return 0;
 }
