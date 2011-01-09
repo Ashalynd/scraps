@@ -117,11 +117,39 @@ struct largenum {
 		}
 		return dst;
 	}
+	
+	friend largenum operator - (const largenum& op1, const largenum& op2) {
+		largenum dst;
+		dst.clear();
+		bool op1more = (op1>op2);
+		bool op2more = (op2>op1);
+		if (!op1more && !op2more) {
+			return dst;
+		}
+		const largenum& opfrom = (op1more?op1:op2);
+		const largenum& opwhat = (op1more?op2:op1);
+		dst.neg = (!op1more);
+		int rest = 0;
+		deque<int>::const_iterator it1 = opfrom.op.begin();
+		deque<int>::const_iterator it2 = opwhat.op.begin();
+		while (it1<opfrom.op.end()) {
+			int diff = (*it1) - rest;
+			if (it2<opwhat.op.end()) diff-=(*it2);
+			if (diff<0) {
+				rest = (-diff/10) + (-diff%10?1:0);
+				diff = rest*10+diff;
+			} else rest = 0;
+			dst.op.push_back(diff);
+			it1++; it2++;
+		}
+		while((*dst.op.rbegin())==0) dst.op.pop_back();
+		return dst;
+	}
 };
 
 int main (int argc, char* argv[]) {
 	largenum N1;
-	string out;
+	string out, str;
 	cout<<"N1="<<N1<<endl;
 	largenum N2(123414454);
 	cout<<"N2="<<N2<<endl;
@@ -134,10 +162,13 @@ int main (int argc, char* argv[]) {
 	//just to prove that it works as well
 	N4.writestring(out, N4);
 	cout<<"N4="<<out<<endl;
-	cout<<"Enter the number"<<endl;
-	string str;
+	cout<<"Enter first number"<<endl;
 	cin>>str;
-	largenum N5(str);
-	cout<<N4+N5<<endl;
+	largenum op1(str);
+	cout<<"Enter second number"<<endl;
+	cin>>str;
+	largenum op2(str);
+	cout<<"op1+op2="<<op1+op2<<endl;
+	cout<<"op1-op2="<<op1-op2<<endl;
 	return 0;
 }
