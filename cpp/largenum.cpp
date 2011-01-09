@@ -88,6 +88,35 @@ struct largenum {
 		}
 		return ((*ti)>(*vi));
 	}
+	int popzeros(largenum& op) {
+		int numzeros = 0;
+		while(!(*op.op.begin())) {op.op.pop_front(); numzeros++;}
+		return numzeros;
+	}
+	
+	void pushzeros(largenum& op, const int numzeros) {
+		for (int i=0;i<numzeros;i++) op.op.push_front(0);
+	}
+	
+	friend largenum operator + (const largenum& op1, const largenum& op2) {
+		int rest = 0;
+		largenum dst;
+		dst.clear();
+		
+		deque<int>::const_iterator it1 = op1.op.begin();
+		deque<int>::const_iterator it2 = op2.op.begin();
+		while (rest || it1<op1.op.end() || it2<op2.op.end()) {
+			int sum = rest;
+			if (it1<op1.op.end()) sum+=(*it1);
+			if (it2<op2.op.end()) sum+=(*it2);
+			int token = sum%10;
+			rest = (sum-token)/10;
+			dst.op.push_back(token);
+			it1++;
+			it2++;
+		}
+		return dst;
+	}
 };
 
 int main (int argc, char* argv[]) {
@@ -104,6 +133,11 @@ int main (int argc, char* argv[]) {
 	largenum N4("23412432542354364356357676674563456435346345");
 	//just to prove that it works as well
 	N4.writestring(out, N4);
-	cout<<"N2="<<out<<endl;
+	cout<<"N4="<<out<<endl;
+	cout<<"Enter the number"<<endl;
+	string str;
+	cin>>str;
+	largenum N5(str);
+	cout<<N4+N5<<endl;
 	return 0;
 }
