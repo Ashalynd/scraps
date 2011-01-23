@@ -17,6 +17,7 @@ class DuctPath {
 	int w;
 	int h;
 	unsigned int size;
+    unsigned int count;
 	IntPair start;
 	IntPair finish;
 	const IntPair toByteOffset(IntPair where) const {
@@ -47,12 +48,13 @@ public:
 		this->size = (size%8)? (size/8)+1: size/8;
 		start = finish = IntPair(0,0);
 		this->rooms = new Byte(size);
+        this->count = 0;
 		if (!this->rooms) throw NO_MEMORY;
         for (int y=0;y<h;y++) {
             for (int x=0;x<w;x++) {
                 switch(rooms[y*w+x]) {
                     case 1:
-                        setPos(IntPair(x,y), this->rooms);break;
+                        setPos(IntPair(x,y), this->rooms); this->count++; break;
                     case 2:
                         start = IntPair(x,y);break;
                     case 3:
@@ -64,25 +66,35 @@ public:
         }
 	}
 	
-	int calcPath(IntPair start, IntPair finish) {
-		return 0;
+	int calcPath(IntPair start = IntPair(-1,-1), IntPair finish = IntPair(-1,-1)) {
+        if (start==IntPair(-1,-1)) start = this->start;
+        if (finish==IntPair(-1,-1)) finish = this->finish;
+        return calcStep(start, this->rooms, this->count);
 	}
 	~DuctPath() {
 		if (rooms) delete[] rooms;
 	}
 	int calcStep(IntPair prevPos, Byte* rooms, unsigned int count) {
+        if (getPos(prevPos, rooms)) return 0;
 		Byte* myRooms = new Byte(size);
 		if (!myRooms) throw NO_MEMORY;
 		memcpy(myRooms, rooms, size);
-		if (!setPos(prevPos, myRooms)) return 0;
+		setPos(prevPos, myRooms);
 		count+=1;
-		if (count==size*8)
+		if (count==size*8) {
+            delete myRooms;
 			return (prevPos == finish);
+        }
 		int result = 0;
 		for (int i=0;i<numMoves;i++) {
 			IntPair newPos = IntPair(prevPos.first+movements[i].first, prevPos.second+movements[i].second);
-			if (!getPos(newPos,myRooms)) result+=calcStep(newPos, myRooms, count);
+			result+=calcStep(newPos, myRooms, count);
 		}
-		return 0;
+        delete myRooms;
+		return result;
 	}
 };
+
+int main(int argc, char* argv[]) {
+    return 0;
+}
